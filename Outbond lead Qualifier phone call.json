@@ -1,0 +1,566 @@
+{
+  "name": "Outbond lead Qualifier phone call",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Work with us!",
+        "formDescription": "Fill out the form and we will reached you ASAP.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name",
+              "placeholder": "john"
+            },
+            {
+              "fieldLabel": "Phone Number",
+              "fieldType": "number",
+              "placeholder": "03439644996"
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "placeholder": "zakeenkhann@gmail.com"
+            },
+            {
+              "fieldLabel": "Company name",
+              "placeholder": "Green Grass"
+            },
+            {
+              "fieldLabel": "Role",
+              "placeholder": "Janitor"
+            },
+            {
+              "fieldLabel": "Request",
+              "placeholder": "AI Automation lead for my gardening business"
+            },
+            {
+              "fieldLabel": "Company Size",
+              "fieldType": "number",
+              "placeholder": "12"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        -48
+      ],
+      "id": "eab53c39-cb83-4bf8-880d-38bd54348b2c",
+      "name": "On form submission",
+      "webhookId": "b7b584e1-d292-45cf-9ca2-2f62fd5ce40f"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const phone = String(item.json[\"Phone Number\"] ?? \"\");\n  \n  // Strip everything except digits\n  const digits = phone.replace(/\\D/g, \"\");\n  \n  let standardized;\n  \n  if (digits.length === 10) {\n    // Perfect — use as-is\n    standardized = digits;\n  } else if (digits.length === 11 && digits.startsWith(\"1\")) {\n    // +1 or 1 country code — strip it\n    standardized = digits.slice(1);\n  } else {\n    standardized = \"Incorrect format\";\n  }\n  \n  return {\n    json: {\n      ...item.json,\n      \"Phone Number\": standardized\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -48
+      ],
+      "id": "ecd9a4af-7f29-44ae-96a9-09258d6e4d57",
+      "name": "Standerized"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4ac01ce9-0c18-4945-b772-efe3f4af377c",
+              "leftValue": "={{ $json['Phone Number'] }}",
+              "rightValue": "incorrect format",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        -48
+      ],
+      "id": "ac376458-12ab-4d17-806c-75412f0226d9",
+      "name": "Incorrect phone ?"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Pabfptv6ji2qW_Vrs6oOunkPD7GnWYygF6r-FCE7k1A",
+          "mode": "list",
+          "cachedResultName": "Contacts phone numbers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Pabfptv6ji2qW_Vrs6oOunkPD7GnWYygF6r-FCE7k1A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Pabfptv6ji2qW_Vrs6oOunkPD7GnWYygF6r-FCE7k1A/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [
+            "phone numbers"
+          ],
+          "schema": [
+            {
+              "id": "phone numbers",
+              "displayName": "phone numbers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        -144
+      ],
+      "id": "97abea75-f833-40eb-89be-b6ea0640bb37",
+      "name": "log incorrect phone",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "EuDtja46IPMzArPi",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        -48
+      ],
+      "id": "c0fd2d35-e2ed-4a35-a16f-fd5bfa0ba67b",
+      "name": "Wait",
+      "webhookId": "c51b827e-81c1-481a-8712-dc0b643ce3ca"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.vapi.ai/call/{{ $json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1072,
+        -48
+      ],
+      "id": "6c8f3b93-bedc-4a3a-9dbb-15ae32108c4b",
+      "name": "Get Call details",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "POEXuX5Jqya0NTct",
+          "name": "Vapi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5efd2306-3ac0-4ff6-9770-0b01203fbdd2",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ended",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1440,
+        -48
+      ],
+      "id": "d5d4a1e5-41a6-48e2-8a2a-563bec360d4e",
+      "name": "Ended?"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        -48
+      ],
+      "id": "fa5225e0-d00a-4c79-a2f0-f096d790dbbc",
+      "name": "Limit"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1648,
+        0
+      ],
+      "id": "239ee977-8001-4d8c-aaaf-30ab6d60330f",
+      "name": "pooling",
+      "webhookId": "e3287058-c161-42af-9367-5ae39fd465e6"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "218f710c-2fed-40fd-b56a-679426c006cd",
+              "leftValue": "={{ $json.endedReason }}",
+              "rightValue": "voicemail",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1648,
+        -144
+      ],
+      "id": "216b623b-e956-453f-819b-255f605a8563",
+      "name": "voicemail?"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1s4J7GJ1D8TIeNPtff2sei975z7OMIhFYFsVV84zoiGI",
+          "mode": "list",
+          "cachedResultName": "log voicemail",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1s4J7GJ1D8TIeNPtff2sei975z7OMIhFYFsVV84zoiGI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1s4J7GJ1D8TIeNPtff2sei975z7OMIhFYFsVV84zoiGI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $json.endedReason }}"
+          },
+          "matchingColumns": [
+            "Status"
+          ],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1856,
+        -224
+      ],
+      "id": "f2f0670d-fa17-4096-84a1-a2dfe94129ec",
+      "name": "log voicemail",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "EuDtja46IPMzArPi",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1s4J7GJ1D8TIeNPtff2sei975z7OMIhFYFsVV84zoiGI",
+          "mode": "list",
+          "cachedResultName": "log voicemail",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1s4J7GJ1D8TIeNPtff2sei975z7OMIhFYFsVV84zoiGI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1872423212,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1s4J7GJ1D8TIeNPtff2sei975z7OMIhFYFsVV84zoiGI/edit#gid=1872423212"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $json.endedReason }}"
+          },
+          "matchingColumns": [
+            "Status"
+          ],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1856,
+        -48
+      ],
+      "id": "cfa0c691-587e-47e8-8642-94ff533b198f",
+      "name": "log complete",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "EuDtja46IPMzArPi",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/call",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assistantId\": \"98bb36a5-893d-4bce-a0e2-fcb30528873f\",\n  \"phoneNumberId\": \"b6750c39-a8c2-4d7f-8e42-6d66f19f2d0c\",\n  \"customer\": {\n    \"number\": \"+1{{ $json['Phone Number'] }}\"\n  },\n  \"assistantOverrides\": {\n    \"variableValues\": {\n      \"lead_name\": \"{{ $json.Name }}\",\n      \"lead_company_name\": \"{{ $json['Company name'] }}\",\n      \"lead_request\": \"{{ $json.Request }}\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        48
+      ],
+      "id": "0d578297-dbf2-4a38-980a-3a56eeb1f2e8",
+      "name": "Calling Customer/vapi",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "POEXuX5Jqya0NTct",
+          "name": "Vapi"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Standerized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standerized": {
+      "main": [
+        [
+          {
+            "node": "Incorrect phone ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Incorrect phone ?": {
+      "main": [
+        [
+          {
+            "node": "log incorrect phone",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calling Customer/vapi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get Call details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Call details": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Ended?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ended?": {
+      "main": [
+        [
+          {
+            "node": "voicemail?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "pooling",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pooling": {
+      "main": [
+        [
+          {
+            "node": "Get Call details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "voicemail?": {
+      "main": [
+        [
+          {
+            "node": "log voicemail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "log complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calling Customer/vapi": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "54035094-a841-4f36-924b-db410a98894d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8ff45a24ef29b99f02c9f5629206e8dd9dcf014485731621b131805abfdf8a84"
+  },
+  "id": "YGBED4EtV6pz3DwZ",
+  "tags": []
+}
